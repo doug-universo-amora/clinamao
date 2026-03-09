@@ -101,6 +101,12 @@ function desfazerChegada(agendamentoId) {
         })
     };
 }
+
+// Gera uma cor fixa baseada no ID Numérico do Profissional para diferenciar as agendas
+function getColorFromId(id) {
+    const colors = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#06B6D4'];
+    return colors[(id || 0) % colors.length];
+}
 </script>
 
 
@@ -145,8 +151,8 @@ function desfazerChegada(agendamentoId) {
                     <input type="date" v-model="data" class="rounded-md border-gray-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
 
                     <select v-model="profissionalId" class="rounded-md border-gray-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                        <option :value="null">Todos os profissionais</option>
-                        <option v-for="p in profissionais" :key="p.id" :value="p.id">{{ p.user?.name }}</option>
+                        <option :value="null">Visão Consolidada (Todas as Permissões)</option>
+                        <option v-for="p in profissionais" :key="p.id" :value="p.id">{{ p.user?.name }} (Minha Agenda)</option>
                     </select>
 
                     <div class="flex rounded-md shadow-sm">
@@ -179,7 +185,10 @@ function desfazerChegada(agendamentoId) {
                                                 </button>
                                             </div>
                                         </div>
-                                        <div class="text-xs text-gray-500">{{ ag.profissional?.user?.name }} <span v-if="ag.sala">· {{ ag.sala?.nome }}</span></div>
+                                        <div class="text-xs text-gray-500 flex items-center">
+                                            <span v-if="!profissionalId" class="w-2 h-2 rounded-full inline-block mr-1" :style="{ backgroundColor: getColorFromId(ag.profissional_id) }"></span>
+                                            {{ ag.profissional?.user?.name }} <span v-if="ag.sala" class="ml-1">· {{ ag.sala?.nome }}</span>
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="flex flex-wrap items-center gap-2 sm:justify-end w-full sm:w-auto">
@@ -208,7 +217,11 @@ function desfazerChegada(agendamentoId) {
                             <div v-for="ag in dia.agendamentos" :key="ag.id" class="rounded-md p-2 text-xs cursor-pointer hover:opacity-80 transition" :style="{ backgroundColor: statusColor(ag.status) + '20', borderLeft: '3px solid ' + statusColor(ag.status) }">
                                 <div class="font-medium text-gray-900">{{ ag.hora_inicio?.substring(0,5) }}</div>
                                 <div class="text-gray-600 truncate">{{ ag.paciente?.nome }}</div>
-                                <div class="text-gray-400 truncate">{{ ag.profissional?.user?.name }}</div>
+                                <div class="text-gray-600 truncate">{{ ag.paciente?.nome }}</div>
+                                <div class="text-gray-400 truncate flex items-center mt-0.5">
+                                    <span v-if="!profissionalId" class="w-1.5 h-1.5 rounded-full inline-block mr-1 flex-shrink-0" :style="{ backgroundColor: getColorFromId(ag.profissional_id) }"></span>
+                                    <span class="truncate">{{ ag.profissional?.user?.name }}</span>
+                                </div>
                             </div>
                             <div v-if="!dia.agendamentos?.length" class="text-center text-gray-300 text-xs py-4">—</div>
                         </div>

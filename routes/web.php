@@ -42,6 +42,10 @@ Route::middleware('auth')->group(function () {
 
     // Profissionais
     Route::resource('profissionais', ProfissionalController::class)->except(['show'])->middleware('permission:profissionais.listar');
+    
+    // Acessos Compartilhados de Agenda
+    Route::get('/profissionais/{profissional}/acessos', [ProfissionalController::class, 'acessos'])->name('profissionais.acessos')->middleware('permission:profissionais.editar');
+    Route::post('/profissionais/{profissional}/acessos', [ProfissionalController::class, 'syncAcessos'])->name('profissionais.acessos.sync')->middleware('permission:profissionais.editar');
 
     // Pacientes
     Route::resource('pacientes', PacienteController::class)->middleware('permission:pacientes.listar');

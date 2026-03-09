@@ -60,9 +60,10 @@ function destroy(id) {
                             <span v-if="prof.registro_conselho" class="text-xs text-gray-400">· {{ prof.registro_conselho }}</span>
                             <span class="text-xs text-gray-400">· {{ prof.duracao_consulta }} min</span>
                         </div>
-                        <div class="flex justify-end space-x-3">
-                            <Link :href="route('profissionais.edit', prof.id)" class="text-sm text-indigo-600">Editar</Link>
-                            <button @click="destroy(prof.id)" class="text-sm text-red-600">Excluir</button>
+                        <div class="flex justify-end space-x-3 mt-4">
+                            <Link v-if="$page.props.auth.permissions.includes('profissionais.editar')" :href="route('profissionais.acessos', prof.id)" class="text-sm text-emerald-600 font-medium hover:underline">Acessos</Link>
+                            <Link :href="route('profissionais.edit', prof.id)" class="text-sm text-indigo-600 hover:underline">Editar</Link>
+                            <button @click="destroy(prof.id)" class="text-sm text-red-600 hover:underline">Excluir</button>
                         </div>
                     </div>
                     <div v-if="!profissionais?.length" class="bg-white rounded-lg shadow-sm p-8 text-center text-sm text-gray-500">
@@ -98,7 +99,8 @@ function destroy(id) {
                                         </span>
                                     </td>
                                     <td class="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
-                                        <Link :href="route('profissionais.edit', prof.id)" class="text-indigo-600 hover:text-indigo-900 mr-3">Editar</Link>
+                                        <Link v-if="$page.props.auth.permissions.includes('profissionais.editar')" :href="route('profissionais.acessos', prof.id)" class="text-emerald-600 hover:text-emerald-900 mr-4 font-semibold">Acessos</Link>
+                                        <Link :href="route('profissionais.edit', prof.id)" class="text-indigo-600 hover:text-indigo-900 mr-4">Editar</Link>
                                         <button @click="destroy(prof.id)" class="text-red-600 hover:text-red-900">Excluir</button>
                                     </td>
                                 </tr>

@@ -65,4 +65,26 @@ class Profissional extends Model
 
         return $this->duracao_consulta;
     }
+
+    /**
+     * Profissionais para os quais ESTE profissional DEU acesso à própria agenda.
+     * (A agenda é minha, e eu deixei as pessoas abaixo olharem)
+     */
+    public function acessosConcedidos()
+    {
+        return $this->belongsToMany(Profissional::class, 'profissional_acessos', 'concedente_id', 'acessante_id')
+                    ->withPivot(['id', 'cliente_id', 'nivel_acesso'])
+                    ->withTimestamps();
+    }
+
+    /**
+     * Profissionais (agendas) das quais ESTE profissional RECEBEU acesso.
+     * (Essa pessoa me deu a chave pra eu olhar a agenda dela)
+     */
+    public function acessosRecebidos()
+    {
+        return $this->belongsToMany(Profissional::class, 'profissional_acessos', 'acessante_id', 'concedente_id')
+                    ->withPivot(['id', 'cliente_id', 'nivel_acesso'])
+                    ->withTimestamps();
+    }
 }

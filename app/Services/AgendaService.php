@@ -220,8 +220,28 @@ class AgendaService
             ->where('cliente_id', $clienteId)
             ->whereDate('data', $data);
 
-        if ($profissionalId) {
-            $query->where('profissional_id', $profissionalId);
+        $user = Auth::user();
+        if (!$user->hasRole('Administrador')) {
+            $meuProfissionalId = $user->profissional?->id;
+            $idsPermitidos = [];
+            if ($meuProfissionalId) {
+                $idsPermitidos[] = $meuProfissionalId;
+                $acessos = $user->profissional->acessosRecebidos()->pluck('concedente_id')->toArray();
+                $idsPermitidos = array_merge($idsPermitidos, $acessos);
+            }
+            if (empty($idsPermitidos)) {
+                $query->whereIn('profissional_id', []);
+            } else {
+                if ($profissionalId && in_array($profissionalId, $idsPermitidos)) {
+                    $query->where('profissional_id', $profissionalId);
+                } else {
+                    $query->whereIn('profissional_id', $idsPermitidos);
+                }
+            }
+        } else {
+            if ($profissionalId) {
+                $query->where('profissional_id', $profissionalId);
+            }
         }
 
         return $query->orderBy('hora_inicio')->get();
@@ -240,8 +260,28 @@ class AgendaService
             ->where('cliente_id', $clienteId)
             ->whereBetween('data', [$inicio, $fim]);
 
-        if ($profissionalId) {
-            $query->where('profissional_id', $profissionalId);
+        $user = Auth::user();
+        if (!$user->hasRole('Administrador')) {
+            $meuProfissionalId = $user->profissional?->id;
+            $idsPermitidos = [];
+            if ($meuProfissionalId) {
+                $idsPermitidos[] = $meuProfissionalId;
+                $acessos = $user->profissional->acessosRecebidos()->pluck('concedente_id')->toArray();
+                $idsPermitidos = array_merge($idsPermitidos, $acessos);
+            }
+            if (empty($idsPermitidos)) {
+                $query->whereIn('profissional_id', []);
+            } else {
+                if ($profissionalId && in_array($profissionalId, $idsPermitidos)) {
+                    $query->where('profissional_id', $profissionalId);
+                } else {
+                    $query->whereIn('profissional_id', $idsPermitidos);
+                }
+            }
+        } else {
+            if ($profissionalId) {
+                $query->where('profissional_id', $profissionalId);
+            }
         }
 
         $agendamentos = $query->orderBy('data')->orderBy('hora_inicio')->get();

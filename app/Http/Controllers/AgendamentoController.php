@@ -29,10 +29,35 @@ class AgendamentoController extends Controller
         $profissionalId = $request->input('profissional_id');
         $visualizacao = $request->input('visualizacao', 'dia');
 
-        $profissionais = Profissional::where('cliente_id', $clienteId)
+        $user = auth()->user();
+        $profissionaisQuery = Profissional::where('cliente_id', $clienteId)
             ->where('status', true)
-            ->with('user:id,name')
-            ->get();
+            ->with('user:id,name');
+
+        $meuProfissionalId = $user->profissional?->id;
+        $idsPermitidos = [];
+
+        if (!$user->hasRole('Administrador')) {
+            if ($meuProfissionalId) {
+                $idsPermitidos[] = $meuProfissionalId;
+                $acessos = $user->profissional->acessosRecebidos()->pluck('concedente_id')->toArray();
+                $idsPermitidos = array_merge($idsPermitidos, $acessos);
+            }
+            
+            if (empty($idsPermitidos)) {
+                $profissionaisQuery->whereIn('id', []); // bloqueia se não for profissional nem admin
+            } else {
+                $profissionaisQuery->whereIn('id', $idsPermitidos);
+            }
+        }
+
+        $profissionais = $profissionaisQuery->get();
+        $idsDisponiveis = $profissionais->pluck('id')->toArray();
+
+        // Se o profissional_id requisitado não estiver na lista permitida, limpe ou force o primeiro
+        if ($profissionalId && !in_array($profissionalId, $idsDisponiveis)) {
+            $profissionalId = null;
+        }
 
         $agenda = [];
         if ($visualizacao === 'semana') {
@@ -62,10 +87,27 @@ class AgendamentoController extends Controller
     {
         $clienteId = auth()->user()->cliente_id;
 
-        $profissionais = Profissional::where('cliente_id', $clienteId)
+        $user = auth()->user();
+        $profissionaisQuery = Profissional::where('cliente_id', $clienteId)
             ->where('status', true)
-            ->with('user:id,name')
-            ->get();
+            ->with('user:id,name');
+
+        if (!$user->hasRole('Administrador')) {
+            $meuProfissionalId = $user->profissional?->id;
+            $idsPermitidos = [];
+            if ($meuProfissionalId) {
+                $idsPermitidos[] = $meuProfissionalId;
+                $acessos = $user->profissional->acessosRecebidos()->pluck('concedente_id')->toArray();
+                $idsPermitidos = array_merge($idsPermitidos, $acessos);
+            }
+            if (empty($idsPermitidos)) {
+                $profissionaisQuery->whereIn('id', []);
+            } else {
+                $profissionaisQuery->whereIn('id', $idsPermitidos);
+            }
+        }
+
+        $profissionais = $profissionaisQuery->get();
 
         $pacientes = Paciente::where('cliente_id', $clienteId)
             ->where('status', 'ativo')

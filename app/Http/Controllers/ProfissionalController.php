@@ -6,10 +6,11 @@ use App\Http\Requests\ProfissionalStoreRequest;
 use App\Http\Requests\ProfissionalUpdateRequest;
 use App\Models\User;
 use App\Services\ProfissionalService;
-use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
 use Inertia\Response;
+use App\Models\Profissional;
 
 class ProfissionalController extends Controller
 {
@@ -79,5 +80,46 @@ class ProfissionalController extends Controller
 
         return Redirect::route('profissionais.index')
             ->with('success', 'Profissional excluído com sucesso.');
+    }
+
+    public function acessos(int $id): Response
+    {
+        $profissional = $this->profissionalService->buscar($id);
+        $profissional->load('user');
+        
+        $clienteId = auth()->user()->cliente_id;
+        
+        $outrosProfissionais = Profissional::where('cliente_id', $clienteId)
+            ->where('id', '!=', $id)
+            ->with('user:id,name')
+            ->get();
+            
+        $acessosRecebidos = $profissional->acessosRecebidos()->pluck('concedente_id');
+
+        return Inertia::render('Profissionais/Acessos', [
+            'profissional' => $profissional,
+            'outrosProfissionais' => $outrosProfissionais,
+            'acessosRecebidos' => $acessosRecebidos,
+        ]);
+    }
+
+    public function syncAcessos(Request $request, int $id): RedirectResponse
+    {
+        $request->validate([
+            'acessos' => 'array'
+        ]);
+
+        $profissional = Profissional::findOrFail($id);
+        $clienteId = auth()->user()->cliente_id;
+        
+        $syncData = [];
+        foreach ($request->input('acessos', []) as $concedenteId) {
+            $syncData[$concedenteId] = ['cliente_id' => $clienteId, 'nivel_acesso' => 'gerenciar'];
+        }
+
+        $profissional->acessosRecebidos()->sync($syncData);
+
+        return Redirect::route('profissionais.index')
+            ->with('success', 'Acessos atualizados com sucesso.');
     }
 }
