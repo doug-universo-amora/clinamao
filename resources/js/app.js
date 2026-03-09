@@ -16,7 +16,17 @@ createInertiaApp({
             import.meta.glob('./Pages/**/*.vue'),
         ),
     setup({ el, App, props, plugin }) {
-        return createApp({ render: () => h(App, props) })
+        const vueApp = createApp({ render: () => h(App, props) });
+        
+        // Global acl helpers
+        vueApp.config.globalProperties.$can = function (permission) {
+            return props.initialPage.props.auth?.user?.permissions?.includes(permission);
+        };
+        vueApp.config.globalProperties.$hasRole = function (role) {
+            return props.initialPage.props.auth?.user?.roles?.includes(role);
+        };
+
+        return vueApp
             .use(plugin)
             .use(ZiggyVue)
             .mount(el);

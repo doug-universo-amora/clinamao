@@ -35,33 +35,33 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     // Usuários
-    Route::resource('usuarios', UsuarioController::class)->except(['show']);
+    Route::resource('usuarios', UsuarioController::class)->except(['show'])->middleware('permission:usuarios.listar');
 
     // Profissionais
-    Route::resource('profissionais', ProfissionalController::class)->except(['show']);
+    Route::resource('profissionais', ProfissionalController::class)->except(['show'])->middleware('permission:profissionais.listar');
 
     // Pacientes
-    Route::resource('pacientes', PacienteController::class);
+    Route::resource('pacientes', PacienteController::class)->middleware('permission:pacientes.listar');
 
     // ─── Agenda Module ───────────────────────────────────────
 
     // Agenda principal (visualização dia/semana)
-    Route::get('/agenda', [AgendamentoController::class, 'index'])->name('agenda.index');
+    Route::get('/agenda', [AgendamentoController::class, 'index'])->name('agenda.index')->middleware('permission:agenda.visualizar');
 
     // Disponibilidades
-    Route::resource('disponibilidades', DisponibilidadeController::class)->except(['create', 'show', 'edit']);
+    Route::resource('disponibilidades', DisponibilidadeController::class)->except(['create', 'show', 'edit'])->middleware('permission:agenda.editar');
 
     // Bloqueios de agenda
-    Route::resource('bloqueios', BloqueioAgendaController::class)->except(['create', 'show', 'edit']);
+    Route::resource('bloqueios', BloqueioAgendaController::class)->except(['create', 'show', 'edit'])->middleware('permission:agenda.editar');
 
     // Agendamentos
-    Route::get('/agendamentos/criar', [AgendamentoController::class, 'create'])->name('agendamentos.create');
-    Route::post('/agendamentos', [AgendamentoController::class, 'store'])->name('agendamentos.store');
-    Route::put('/agendamentos/{id}/reagendar', [AgendamentoController::class, 'reagendar'])->name('agendamentos.reagendar');
-    Route::put('/agendamentos/{id}/status', [AgendamentoController::class, 'alterarStatus'])->name('agendamentos.status');
-    Route::put('/agendamentos/{id}/chegada', [AgendamentoController::class, 'registrarChegada'])->name('agendamentos.chegada');
-    Route::delete('/agendamentos/{id}/chegada', [AgendamentoController::class, 'desfazerChegada'])->name('agendamentos.chegada.desfazer');
-    Route::delete('/agendamentos/{id}/cancelar', [AgendamentoController::class, 'cancelar'])->name('agendamentos.cancelar');
+    Route::get('/agendamentos/criar', [AgendamentoController::class, 'create'])->name('agendamentos.create')->middleware('permission:agendamentos.criar');
+    Route::post('/agendamentos', [AgendamentoController::class, 'store'])->name('agendamentos.store')->middleware('permission:agendamentos.criar');
+    Route::put('/agendamentos/{id}/reagendar', [AgendamentoController::class, 'reagendar'])->name('agendamentos.reagendar')->middleware('permission:agendamentos.reagendar');
+    Route::put('/agendamentos/{id}/status', [AgendamentoController::class, 'alterarStatus'])->name('agendamentos.status')->middleware('permission:agendamentos.editar');
+    Route::put('/agendamentos/{id}/chegada', [AgendamentoController::class, 'registrarChegada'])->name('agendamentos.chegada')->middleware('permission:agendamentos.editar');
+    Route::delete('/agendamentos/{id}/chegada', [AgendamentoController::class, 'desfazerChegada'])->name('agendamentos.chegada.desfazer')->middleware('permission:agendamentos.editar');
+    Route::delete('/agendamentos/{id}/cancelar', [AgendamentoController::class, 'cancelar'])->name('agendamentos.cancelar')->middleware('permission:agendamentos.cancelar');
 
     // API: horários disponíveis (JSON)
     Route::get('/api/horarios-disponiveis', [AgendamentoController::class, 'horariosDisponiveis'])->name('api.horarios');

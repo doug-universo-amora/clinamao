@@ -40,24 +40,28 @@ const showingNavigationDropdown = ref(false);
                                     Dashboard
                                 </NavLink>
                                 <NavLink
+                                    v-if="$can('agenda.visualizar')"
                                     :href="route('agenda.index')"
                                     :active="route().current('agenda.*') || route().current('agendamentos.*') || route().current('disponibilidades.*') || route().current('bloqueios.*')"
                                 >
                                     Agenda
                                 </NavLink>
                                 <NavLink
+                                    v-if="$can('usuarios.listar')"
                                     :href="route('usuarios.index')"
                                     :active="route().current('usuarios.*')"
                                 >
                                     Usuários
                                 </NavLink>
                                 <NavLink
+                                    v-if="$can('profissionais.listar')"
                                     :href="route('profissionais.index')"
                                     :active="route().current('profissionais.*')"
                                 >
                                     Profissionais
                                 </NavLink>
                                 <NavLink
+                                    v-if="$can('pacientes.listar')"
                                     :href="route('pacientes.index')"
                                     :active="route().current('pacientes.*')"
                                 >
@@ -171,24 +175,28 @@ const showingNavigationDropdown = ref(false);
                             Dashboard
                         </ResponsiveNavLink>
                         <ResponsiveNavLink
+                            v-if="$can('agenda.visualizar')"
                             :href="route('agenda.index')"
                             :active="route().current('agenda.*') || route().current('agendamentos.*')"
                         >
                             Agenda
                         </ResponsiveNavLink>
                         <ResponsiveNavLink
+                            v-if="$can('usuarios.listar')"
                             :href="route('usuarios.index')"
                             :active="route().current('usuarios.*')"
                         >
                             Usuários
                         </ResponsiveNavLink>
                         <ResponsiveNavLink
+                            v-if="$can('profissionais.listar')"
                             :href="route('profissionais.index')"
                             :active="route().current('profissionais.*')"
                         >
                             Profissionais
                         </ResponsiveNavLink>
                         <ResponsiveNavLink
+                            v-if="$can('pacientes.listar')"
                             :href="route('pacientes.index')"
                             :active="route().current('pacientes.*')"
                         >
