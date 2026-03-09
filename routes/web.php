@@ -34,6 +34,9 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
+    // Configurações e Acessos
+    Route::resource('roles', \App\Http\Controllers\RoleController::class)->except(['show'])->middleware('permission:roles.listar');
+
     // Usuários
     Route::resource('usuarios', UsuarioController::class)->except(['show'])->middleware('permission:usuarios.listar');
 

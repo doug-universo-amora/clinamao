@@ -62,6 +62,12 @@ class ClienteObserver
 
             // Módulos
             'modulos.gerenciar',
+
+            // Gestão de Perfis de Acesso
+            'roles.listar',
+            'roles.criar',
+            'roles.editar',
+            'roles.excluir',
         ];
 
         // Criar todas as permissões
@@ -79,6 +85,12 @@ class ClienteObserver
         $profissional = Role::findOrCreate('Profissional de Saúde', 'web');
         $profissional->givePermissionTo([
             'agenda.visualizar',
+            'agenda.criar',
+            'agenda.editar',
+            'agenda.cancelar',
+            'agendamentos.criar',
+            'agendamentos.editar',
+            'agendamentos.cancelar',
             'pacientes.listar',
         ]);
 

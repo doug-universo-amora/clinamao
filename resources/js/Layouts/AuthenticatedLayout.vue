@@ -67,6 +67,13 @@ const showingNavigationDropdown = ref(false);
                                 >
                                     Pacientes
                                 </NavLink>
+                                <NavLink
+                                    v-if="$can('roles.listar')"
+                                    :href="route('roles.index')"
+                                    :active="route().current('roles.*')"
+                                >
+                                    Perfis de Acesso
+                                </NavLink>
                             </div>
                         </div>
 
@@ -201,6 +208,13 @@ const showingNavigationDropdown = ref(false);
                             :active="route().current('pacientes.*')"
                         >
                             Pacientes
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            v-if="$can('roles.listar')"
+                            :href="route('roles.index')"
+                            :active="route().current('roles.*')"
+                        >
+                            Perfis de Acesso
                         </ResponsiveNavLink>
                     </div>
 
