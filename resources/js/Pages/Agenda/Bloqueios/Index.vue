@@ -75,6 +75,10 @@ function formatarDataHora(str) {
                 <div v-if="$page.props.flash?.success" class="mb-4 rounded-md bg-green-50 p-4">
                     <p class="text-sm font-medium text-green-800">{{ $page.props.flash.success }}</p>
                 </div>
+                <!-- Error Flash -->
+                <div v-if="$page.props.flash?.error" class="mb-4 rounded-md bg-red-50 p-4">
+                    <p class="text-sm font-medium text-red-800">{{ $page.props.flash.error }}</p>
+                </div>
 
                 <!-- Formulário de novo bloqueio -->
                 <div v-if="showForm" class="mb-6 bg-white p-6 rounded-lg shadow-sm">

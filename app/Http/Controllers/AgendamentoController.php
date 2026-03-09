@@ -39,9 +39,7 @@ class AgendamentoController extends Controller
 
         if (!$user->hasRole('Administrador')) {
             if ($meuProfissionalId) {
-                $idsPermitidos[] = $meuProfissionalId;
-                $acessos = $user->profissional->acessosRecebidos()->pluck('concedente_id')->toArray();
-                $idsPermitidos = array_merge($idsPermitidos, $acessos);
+                $idsPermitidos = $user->profissional->getIdsPermitidos('agenda', 'ler');
             }
             
             if (empty($idsPermitidos)) {
@@ -96,9 +94,8 @@ class AgendamentoController extends Controller
             $meuProfissionalId = $user->profissional?->id;
             $idsPermitidos = [];
             if ($meuProfissionalId) {
-                $idsPermitidos[] = $meuProfissionalId;
-                $acessos = $user->profissional->acessosRecebidos()->pluck('concedente_id')->toArray();
-                $idsPermitidos = array_merge($idsPermitidos, $acessos);
+                // Filtramos APENAS as agendas que este profissional PODE CRIAR
+                $idsPermitidos = $user->profissional->getIdsPermitidos('agenda', 'criar');
             }
             if (empty($idsPermitidos)) {
                 $profissionaisQuery->whereIn('id', []);
@@ -132,6 +129,8 @@ class AgendamentoController extends Controller
 
     public function store(AgendamentoStoreRequest $request): RedirectResponse
     {
+        $this->authorizeAction($request->input('profissional_id'), 'criar');
+
         try {
             $this->agendaService->criarAgendamento($request->validated());
 
@@ -167,6 +166,9 @@ class AgendamentoController extends Controller
      */
     public function reagendar(AgendamentoReagendarRequest $request, int $id): RedirectResponse
     {
+        $agendamento = \App\Models\Agendamento::findOrFail($id);
+        $this->authorizeAction($agendamento->profissional_id, 'editar');
+
         try {
             $this->agendaService->reagendar($id, $request->validated());
 
@@ -186,6 +188,9 @@ class AgendamentoController extends Controller
     {
         $request->validate(['status' => 'required|string']);
 
+        $agendamento = \App\Models\Agendamento::findOrFail($id);
+        $this->authorizeAction($agendamento->profissional_id, 'editar');
+
         $novoStatus = AgendamentoStatusEnum::from($request->input('status'));
         $this->agendaService->alterarStatus($id, $novoStatus);
 
@@ -198,6 +203,9 @@ class AgendamentoController extends Controller
      */
     public function cancelar(int $id): RedirectResponse
     {
+        $agendamento = \App\Models\Agendamento::findOrFail($id);
+        $this->authorizeAction($agendamento->profissional_id, 'excluir');
+
         $this->agendaService->alterarStatus($id, AgendamentoStatusEnum::CANCELADO);
 
         return Redirect::back()
@@ -209,6 +217,9 @@ class AgendamentoController extends Controller
      */
     public function registrarChegada(int $id): RedirectResponse
     {
+        $agendamento = \App\Models\Agendamento::findOrFail($id);
+        $this->authorizeAction($agendamento->profissional_id, 'editar');
+
         $this->agendaService->registrarChegada($id);
         
         return Redirect::back()
@@ -220,9 +231,40 @@ class AgendamentoController extends Controller
      */
     public function desfazerChegada(int $id): RedirectResponse
     {
+        $agendamento = \App\Models\Agendamento::findOrFail($id);
+        $this->authorizeAction($agendamento->profissional_id, 'editar');
+
         $this->agendaService->desfazerChegada($id);
         
         return Redirect::back()
             ->with('success', 'Chegada do paciente desmarcada!');
+    }
+
+    /**
+     * Validador/Gatekeeper Interno para Ações da Agenda
+     */
+    private function authorizeAction(int $alvoProfissionalId, string $acao): void
+    {
+        $user = auth()->user();
+        if ($user->hasRole('Administrador')) {
+            return;
+        }
+
+        $meuProfissionalId = $user->profissional?->id;
+        
+        // Se a agenda for a minha, eu sempre posso tudo
+        if ($meuProfissionalId === $alvoProfissionalId) {
+            return;
+        }
+
+        // Caso contrário, verificar se eu tenho permissão na agenda do alvo
+        if ($meuProfissionalId) {
+            $idsPermitidos = $user->profissional->getIdsPermitidos('agenda', $acao);
+            if (in_array($alvoProfissionalId, $idsPermitidos)) {
+                return;
+            }
+        }
+
+        abort(403, 'Acesso Negado. Você não tem permissão para ' . $acao . ' agendamentos nesta agenda.');
     }
 }

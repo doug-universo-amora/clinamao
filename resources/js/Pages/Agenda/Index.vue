@@ -138,6 +138,10 @@ function getColorFromId(id) {
                 <div v-if="$page.props.flash?.success" class="mb-4 rounded-md bg-green-50 p-4">
                     <p class="text-sm font-medium text-green-800">{{ $page.props.flash.success }}</p>
                 </div>
+                <!-- Error Flash -->
+                <div v-if="$page.props.flash?.error" class="mb-4 rounded-md bg-red-50 p-4">
+                    <p class="text-sm font-medium text-red-800">{{ $page.props.flash.error }}</p>
+                </div>
 
                 <!-- Filtros -->
                 <div class="mb-6 flex flex-wrap items-center gap-3 bg-white p-4 rounded-lg shadow-sm">

@@ -26,5 +26,12 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\HttpException $e, \Illuminate\Http\Request $request) {
+            // Se for requisição Inertia normal (não API) interceptamos o 403
+            if ($e->getStatusCode() === 403 && $request->wantsJson() === false) {
+                return back()->with([
+                    'error' => $e->getMessage() ?: 'Acesso negado. Você não tem permissão para realizar esta ação.',
+                ]);
+            }
+        });
     })->create();

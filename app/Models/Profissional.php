@@ -73,7 +73,7 @@ class Profissional extends Model
     public function acessosConcedidos()
     {
         return $this->belongsToMany(Profissional::class, 'profissional_acessos', 'concedente_id', 'acessante_id')
-                    ->withPivot(['id', 'cliente_id', 'nivel_acesso'])
+                    ->withPivot(['id', 'cliente_id', 'permissoes'])
                     ->withTimestamps();
     }
 
@@ -84,7 +84,28 @@ class Profissional extends Model
     public function acessosRecebidos()
     {
         return $this->belongsToMany(Profissional::class, 'profissional_acessos', 'acessante_id', 'concedente_id')
-                    ->withPivot(['id', 'cliente_id', 'nivel_acesso'])
+                    ->withPivot(['id', 'cliente_id', 'permissoes'])
                     ->withTimestamps();
+    }
+
+    /**
+     * Helper para Controle de Acesso Granular (Gatekeeping).
+     * Retorna um array com os IDs dos profissionais cujas agendas ESTE profissional pode acessar,
+     * dado o módulo (agenda, bloqueio, disponibilidade) e a ação (ler, criar, editar, excluir).
+     */
+    public function getIdsPermitidos(string $modulo, string $acao): array
+    {
+        $ids = [$this->id]; // Sempre tem acesso à própria agenda
+
+        foreach ($this->acessosRecebidos as $acesso) {
+            $json = $acesso->pivot->permissoes;
+            $permissoes = is_string($json) ? json_decode($json, true) : ($json ?? []);
+
+            if (isset($permissoes[$modulo][$acao]) && $permissoes[$modulo][$acao] === true) {
+                $ids[] = $acesso->id;
+            }
+        }
+
+        return array_unique($ids);
     }
 }

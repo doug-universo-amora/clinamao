@@ -95,12 +95,16 @@ class ProfissionalController extends Controller
             ->with('user:id,name')
             ->get();
             
-        $acessosRecebidos = $profissional->acessosRecebidos()->pluck('concedente_id');
+        // Mapa: concedente_id => permissoes (array/object)
+        $acessosRecebidos = $profissional->acessosRecebidos->keyBy('id')->map(function ($acesso) {
+            $permissoes = $acesso->pivot->permissoes;
+            return is_string($permissoes) ? json_decode($permissoes, true) : ($permissoes ?? []);
+        })->toArray();
 
         return Inertia::render('Profissionais/Acessos', [
             'profissional' => $profissional,
             'outrosProfissionais' => $outrosProfissionais,
-            'acessosRecebidos' => $acessosRecebidos,
+            'acessosRecebidos' => (object) $acessosRecebidos,
         ]);
     }
 
@@ -114,8 +118,14 @@ class ProfissionalController extends Controller
         $clienteId = auth()->user()->cliente_id;
         
         $syncData = [];
-        foreach ($request->input('acessos', []) as $concedenteId) {
-            $syncData[$concedenteId] = ['cliente_id' => $clienteId, 'nivel_acesso' => 'gerenciar'];
+        foreach ($request->input('acessos', []) as $concedenteId => $permissoes) {
+            // Ignora se não enviou permissões (não foi marcado nenhuma opção)
+            // Mas o front-end pode mandar um objeto com chaves falsas. 
+            // Vamos apenas salvar o objeto json.
+            $syncData[$concedenteId] = [
+                'cliente_id' => $clienteId, 
+                'permissoes' => is_array($permissoes) ? json_encode($permissoes) : $permissoes
+            ];
         }
 
         $profissional->acessosRecebidos()->sync($syncData);

@@ -26,9 +26,8 @@ class BloqueioAgendaController extends Controller
         if (!$user->hasRole('Administrador')) {
             $meuProfissionalId = $user->profissional?->id;
             if ($meuProfissionalId) {
-                $idsPermitidos[] = $meuProfissionalId;
-                $acessos = $user->profissional->acessosRecebidos()->pluck('concedente_id')->toArray();
-                $idsPermitidos = array_merge($idsPermitidos, $acessos);
+                // Filtramos APENAS as agendas que este profissional PODE LER BLOQUEIOS
+                $idsPermitidos = $user->profissional->getIdsPermitidos('bloqueio', 'ler');
             }
             if (empty($idsPermitidos)) {
                 $profissionaisQuery->whereIn('id', []);
@@ -58,6 +57,8 @@ class BloqueioAgendaController extends Controller
 
     public function store(BloqueioAgendaRequest $request): RedirectResponse
     {
+        $this->authorizeAction($request->input('profissional_id'), 'criar');
+
         $data = $request->validated();
         $data['cliente_id'] = auth()->user()->cliente_id;
 
@@ -70,6 +71,8 @@ class BloqueioAgendaController extends Controller
     public function update(BloqueioAgendaRequest $request, int $id): RedirectResponse
     {
         $bloqueio = BloqueioAgenda::findOrFail($id);
+        $this->authorizeAction($bloqueio->profissional_id, 'editar');
+        
         $bloqueio->update($request->validated());
 
         return Redirect::route('bloqueios.index')
@@ -78,9 +81,38 @@ class BloqueioAgendaController extends Controller
 
     public function destroy(int $id): RedirectResponse
     {
-        BloqueioAgenda::findOrFail($id)->delete();
+        $bloqueio = BloqueioAgenda::findOrFail($id);
+        $this->authorizeAction($bloqueio->profissional_id, 'excluir');
+        
+        $bloqueio->delete();
 
         return Redirect::route('bloqueios.index')
             ->with('success', 'Bloqueio excluído com sucesso.');
+    }
+
+    /**
+     * Validador/Gatekeeper Interno para Ações de Bloqueio
+     */
+    private function authorizeAction(int $alvoProfissionalId, string $acao): void
+    {
+        $user = auth()->user();
+        if ($user->hasRole('Administrador')) {
+            return;
+        }
+
+        $meuProfissionalId = $user->profissional?->id;
+        
+        if ($meuProfissionalId === $alvoProfissionalId) {
+            return;
+        }
+
+        if ($meuProfissionalId) {
+            $idsPermitidos = $user->profissional->getIdsPermitidos('bloqueio', $acao);
+            if (in_array($alvoProfissionalId, $idsPermitidos)) {
+                return;
+            }
+        }
+
+        abort(403, 'Acesso Negado. Você não tem permissão para ' . $acao . ' bloqueios nesta agenda.');
     }
 }

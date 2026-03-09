@@ -50,9 +50,11 @@ const confirm = () => {
         },
         onError: () => {
             isProcessing.value = false;
+            emit('close');
         },
         onFinish: () => {
             isProcessing.value = false;
+            emit('close');
         }
     });
 };
