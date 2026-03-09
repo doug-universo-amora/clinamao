@@ -15,13 +15,42 @@ class DisponibilidadeController extends Controller
 {
     public function index(Request $request): Response
     {
-        $clienteId = auth()->user()->cliente_id;
+        $user = auth()->user();
+        $clienteId = $user->cliente_id;
         $profissionalId = $request->input('profissional_id');
 
-        $profissionais = Profissional::where('cliente_id', $clienteId)
+        $profissionaisQuery = Profissional::where('cliente_id', $clienteId)
             ->where('status', true)
-            ->with('user:id,name')
-            ->get();
+            ->with('user:id,name');
+
+        $idsPermitidos = [];
+
+        if (!$user->hasRole('Administrador')) {
+            $meuProfissionalId = $user->profissional?->id;
+            if ($meuProfissionalId) {
+                $idsPermitidos[] = $meuProfissionalId;
+                $acessos = $user->profissional->acessosRecebidos()->pluck('concedente_id')->toArray();
+                $idsPermitidos = array_merge($idsPermitidos, $acessos);
+            }
+            if (empty($idsPermitidos)) {
+                $profissionaisQuery->whereIn('id', []);
+            } else {
+                $profissionaisQuery->whereIn('id', $idsPermitidos);
+            }
+        }
+
+        $profissionais = $profissionaisQuery->get();
+        $idsDisponiveis = $profissionais->pluck('id')->toArray();
+
+        // Se não houver profissional selecionado, mas houver apenas 1 disponível, seleciona-o
+        if (!$profissionalId && count($idsDisponiveis) === 1) {
+            $profissionalId = $idsDisponiveis[0];
+        }
+
+        // Se o profissionalId requisitado não estiver na lista permitida, força null
+        if ($profissionalId && !in_array($profissionalId, $idsDisponiveis)) {
+            $profissionalId = null;
+        }
 
         $disponibilidades = collect();
         if ($profissionalId) {

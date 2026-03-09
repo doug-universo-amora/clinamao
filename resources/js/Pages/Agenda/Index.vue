@@ -217,7 +217,6 @@ function getColorFromId(id) {
                             <div v-for="ag in dia.agendamentos" :key="ag.id" class="rounded-md p-2 text-xs cursor-pointer hover:opacity-80 transition" :style="{ backgroundColor: statusColor(ag.status) + '20', borderLeft: '3px solid ' + statusColor(ag.status) }">
                                 <div class="font-medium text-gray-900">{{ ag.hora_inicio?.substring(0,5) }}</div>
                                 <div class="text-gray-600 truncate">{{ ag.paciente?.nome }}</div>
-                                <div class="text-gray-600 truncate">{{ ag.paciente?.nome }}</div>
                                 <div class="text-gray-400 truncate flex items-center mt-0.5">
                                     <span v-if="!profissionalId" class="w-1.5 h-1.5 rounded-full inline-block mr-1 flex-shrink-0" :style="{ backgroundColor: getColorFromId(ag.profissional_id) }"></span>
                                     <span class="truncate">{{ ag.profissional?.user?.name }}</span>

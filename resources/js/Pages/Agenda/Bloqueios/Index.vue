@@ -16,7 +16,7 @@ const props = defineProps({
 const showForm = ref(false);
 
 const form = useForm({
-    profissional_id: '',
+    profissional_id: props.profissionais?.length === 1 ? props.profissionais[0].id : '',
     data_inicio: '',
     data_fim: '',
     motivo: '',
@@ -83,8 +83,8 @@ function formatarDataHora(str) {
                         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                             <div>
                                 <InputLabel for="profissional_id" value="Profissional *" />
-                                <select id="profissional_id" v-model="form.profissional_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
-                                    <option value="">Selecione...</option>
+                                <select id="profissional_id" v-model="form.profissional_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 disabled:bg-gray-100 disabled:text-gray-500" :disabled="profissionais.length === 1" required>
+                                    <option value="" v-if="profissionais.length > 1">Selecione...</option>
                                     <option v-for="p in profissionais" :key="p.id" :value="p.id">{{ p.user?.name }}</option>
                                 </select>
                                 <InputError :message="form.errors.profissional_id" class="mt-2" />

@@ -97,8 +97,8 @@ const diasSemana = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 
                 <div class="mb-6 bg-white p-4 rounded-lg shadow-sm">
                     <div class="flex items-center space-x-3">
                         <InputLabel value="Profissional:" />
-                        <select v-model="profissionalId" @change="selecionarProfissional" class="rounded-md border-gray-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500 w-64">
-                            <option :value="null">Selecione...</option>
+                        <select v-model="profissionalId" @change="selecionarProfissional" class="rounded-md border-gray-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500 w-64 disabled:bg-gray-100 disabled:text-gray-500" :disabled="profissionais.length === 1">
+                            <option :value="null" v-if="profissionais.length > 1">Selecione...</option>
                             <option v-for="p in profissionais" :key="p.id" :value="p.id">{{ p.user?.name }}</option>
                         </select>
                     </div>
