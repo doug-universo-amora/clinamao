@@ -7,6 +7,7 @@ use App\Http\Requests\ProfissionalUpdateRequest;
 use App\Models\User;
 use App\Services\ProfissionalService;
 use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
 use Inertia\Response;
