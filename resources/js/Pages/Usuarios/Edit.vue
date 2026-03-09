@@ -5,6 +5,7 @@ import InputLabel from '@/Components/InputLabel.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
+import { vMaska } from "maska/vue";
 
 const props = defineProps({
     usuario: Object,
@@ -52,12 +53,12 @@ function submit() {
                         <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
                             <div>
                                 <InputLabel for="cpf" value="CPF" />
-                                <TextInput id="cpf" type="text" class="mt-1 block w-full" v-model="form.cpf" placeholder="000.000.000-00" />
+                                <TextInput id="cpf" type="text" class="mt-1 block w-full" v-model="form.cpf" placeholder="000.000.000-00" v-maska data-maska="###.###.###-##" />
                                 <InputError :message="form.errors.cpf" class="mt-2" />
                             </div>
                             <div>
-                                <InputLabel for="telefone" value="Telefone" />
-                                <TextInput id="telefone" type="text" class="mt-1 block w-full" v-model="form.telefone" placeholder="(00) 00000-0000" />
+                                <InputLabel for="telefone" value="Celular/Telefone" />
+                                <TextInput id="telefone" type="text" class="mt-1 block w-full" v-model="form.telefone" placeholder="(00) 00000-0000" v-maska data-maska="['(##) ####-####', '(##) #####-####']" />
                                 <InputError :message="form.errors.telefone" class="mt-2" />
                             </div>
                         </div>
